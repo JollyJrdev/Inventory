@@ -1,4 +1,17 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local InventoryService = require(script.InventoryService)
+local ItemsTable = require(script.ItemsTable)
+local Remotes = ReplicatedStorage.Remotes
+local SendData = Remotes.SendData
+
 InventoryService.LoadSlots()
-InventoryService.AddItem("Banana", 1)
-InventoryService.AddItem("Capy", 1)
+
+
+SendData.OnClientEvent:Connect(function(data)
+    print(data)
+    for _, itemInfo in pairs(data.Inventory) do
+        local Info = ItemsTable[itemInfo.Name]
+        if not Info then continue end
+        InventoryService.AddItem(itemInfo.Name, itemInfo.ID, 1, itemInfo.Slot)
+    end    
+end)  
