@@ -3,12 +3,16 @@ local CollectionService = game:GetService("CollectionService")
 local DraggerService = game:GetService("DraggerService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UIS = game:GetService("UserInputService")
+local InventoryService = require(script.Parent.InventoryService)
 local Player = Players.LocalPlayer
 local Mouse = Player:GetMouse()
-local ScrollingFrame = Player.PlayerGui:WaitForChild("ScreenGui").InventoryFrame.ScrollingFrame
+local InvenotryFrame = Player.PlayerGui:WaitForChild("ScreenGui").InventoryFrame
+local ScrollingFrame = InvenotryFrame.ScrollingFrame
 local insetOffset = game:GetService("GuiService"):GetGuiInset().Y
 local Remotes = ReplicatedStorage.Remotes
 local SlotChanged = Remotes.SlotChanged
+local InteractFrame = InvenotryFrame.InteractFrame
+
 
 local Selected = nil
 local lastSlot = nil
@@ -21,12 +25,10 @@ function getNearestSlot()
     local nearestSlot
     for _, slot in pairs(ScrollingFrame:GetChildren()) do
         if not slot:IsA("ImageButton") then continue end
+        if not slot:HasTag("Empty") then continue end
         local slotPos = Vector2.new(slot.AbsolutePosition.X + slot.AbsoluteSize.X/2, slot.AbsolutePosition.Y + slot.AbsoluteSize.Y/2 + insetOffset)
         local Distance = (mousePos - slotPos).Magnitude
-        warn(insetOffset)
-        print(slot.Name, Distance, slotPos)
-        print(slot.AbsolutePosition)
-        print(mousePos)
+
         if not nearestPos then
             nearestPos = Distance
             nearestSlot = slot
@@ -37,7 +39,11 @@ function getNearestSlot()
             nearestSlot = slot
         end    
     end
-    return nearestSlot
+    if nearestSlot then 
+        return nearestSlot
+    else
+        return InventoryService.getEmptySlot()
+    end    
 end    
 
 function DragUpdate(itemUI, offset)
@@ -47,12 +53,12 @@ function DragUpdate(itemUI, offset)
     local nearestSlot = getNearestSlot()
     if not nearestSlot then return end
     selectedSlot = nearestSlot
-    print(nearestSlot)
 end    
 
 UIS.InputBegan:Connect(function(input)
     if input.UserInputType ~= Enum.UserInputType.MouseButton1 then return end
     if not Selected then return end
+    InteractFrame.Visible = false
     lastSlot = Selected.Parent
     local Dragging = Selected
     Dragging.Size = UDim2.new(0,100,0,100)
@@ -68,8 +74,12 @@ end)
 
 UIS.InputEnded:Connect(function(input)
     if input.UserInputType ~= Enum.UserInputType.MouseButton1 then return end
+    if not Selected then return end
     if not DragCon then return end   
     DragCon:Disconnect()
+    DragCon = nil
+    lastSlot:AddTag("Empty")
+    selectedSlot:RemoveTag("Empty")
     Selected.Parent = selectedSlot
     Selected.Position = UDim2.new(0,0,0,0)
     Selected.Size = UDim2.new(1,0,1,0)
@@ -82,13 +92,13 @@ end)
 function InitListeners(UI: GuiButton)
     print("Initated listerns")
     UI.MouseEnter:Connect(function()
+        if DragCon then return end
         Selected = UI
-        print(Selected)
     end)
     
     UI.MouseLeave:Connect(function()
+        if DragCon then return end
         Selected = nil
-        print(Selected)
     end)
 end
 

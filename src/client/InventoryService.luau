@@ -24,7 +24,7 @@ function InventoryService.LoadSlots()
     end    
 end    
 
-function getEmptySlot()
+function InventoryService.getEmptySlot()
 	for i = 1, MAX_SLOTS do
 		local Slot = ScrollingFrame:FindFirstChild(i)
         local isEmpty = Slot:HasTag("Empty")
@@ -62,12 +62,12 @@ end
 
 function InventoryService.AddItem(itemName, ID , amount: number, slot)
     local EmptySlot, index = nil
-    
     if slot then
         EmptySlot = ScrollingFrame:FindFirstChild(slot)
+        if not EmptySlot:HasTag("Empty") then return end
         index = slot
     else
-        EmptySlot, index = getEmptySlot()
+        EmptySlot, index = InventoryService.getEmptySlot()
     end
     if not EmptySlot then return false end
     EmptySlot:RemoveTag("Empty")

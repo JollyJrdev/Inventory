@@ -13,7 +13,6 @@ local UseItem = ReplicatedStorage.Remotes.UseItem
 local Selected = nil
 
 function onInteract(Item: GuiButton)
-    print("Bang", InteractFrame)
     CurrentSelected = Item
     InteractFrame.Visible = true
     InteractFrame.Position = UDim2.new(0, Mouse.X - InteractFrame.Parent.AbsolutePosition.X, 0, Mouse.Y - InteractFrame.Parent.AbsolutePosition.Y)
@@ -27,7 +26,6 @@ UseButton.Activated:Connect(function()
 end)
 
 function InitListeners(UI: GuiButton)
-    print("Initated listerns")
     UI.MouseEnter:Connect(function()
         Selected = UI
         print(Selected)
@@ -53,15 +51,15 @@ end)
 
 UIS.InputEnded:Connect(function(input)
     if input.UserInputType ~= Enum.UserInputType.MouseButton1 then return end
-    if not Selected then return end
+    if not Selected then 
+        InteractFrame.Visible = false
+        return
+    end
     local currentPos = UIS:GetMouseLocation()
-    print((currentPos - startPos).Magnitude)
     if (currentPos - startPos).Magnitude > 5 then return end
     onInteract(Selected)
 end)    
 
 CollectionService:GetInstanceAddedSignal("Used"):Connect(function(instance)
-    print(instance)
     InitListeners(instance)
-
 end)

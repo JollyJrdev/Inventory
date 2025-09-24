@@ -8,7 +8,6 @@ InventoryService.LoadSlots()
 
 
 SendData.OnClientEvent:Connect(function(data)
-    print(data)
     for _, itemInfo in pairs(data.Inventory) do
         local Info = ItemsTable[itemInfo.Name]
         if not Info then continue end
